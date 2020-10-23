@@ -11,6 +11,8 @@ import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.bridge.WritableNativeMap;
 import com.facebook.react.bridge.Promise;
 
+import java.util.Base64;
+
 import org.signal.argon2.Argon2;
 import org.signal.argon2.Version;
 import org.signal.argon2.Type;
@@ -30,18 +32,28 @@ public class RNArgon2Module extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void argon2(String password, String salt, Promise promise) {
+    public void argon2(ReadableMap params, Promise promise) {
+        String typeString = params.getString("type")
+        Type type = Type.Argon2d;
+        if("d".equals(typeString) == 0) {
+            type = Type.Argon2d;
+        } else if ("id".equals(typeString) == 0) {
+            type = Type.Argon2id;
+        } else if ("i".equals(typeString) == 0) {
+            type = Type.Argon2i;
+        }
         try {
             Argon2 argon2 = new Argon2.Builder(Version.V13)
-                    .iterations(2)
-                    .memoryCost(MemoryCost.MiB(32))
-                    .parallelism(1)
-                    .hashLength(32)
-                    .type(Type.Argon2id)
+                    .iterations(params.getInt("iterations"))
+                    // .memoryCost(MemoryCost.MiB(32))
+                    .memoryCost(params.getInt("memory"))
+                    .parallelism(params.getInt("parallelism"))
+                    .hashLength(params.getInt("hashLen"))
+                    .type(type)
                     .build();
 
-            final byte[] passwordBytes = password.getBytes("UTF-8");
-            final byte[] saltBytes = salt.getBytes("UTF-8");
+            final byte[] passwordBytes = Base64.getDecodeder().decode(params.getString("password"));
+            final byte[] saltBytes = Base64.getDecodeder().decode(params.getString("salt"));
 
             Argon2.Result result = argon2.hash(passwordBytes, saltBytes);
 

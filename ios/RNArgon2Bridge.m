@@ -2,6 +2,6 @@
 
 @interface RCT_EXTERN_MODULE(RNArgon2, NSObject)
 
-RCT_EXTERN_METHOD(argon2: (NSString *)password salt:(NSString *)salt resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
+RCT_EXTERN_METHOD(argon2: (NSDictionary *)params resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
 
 @end

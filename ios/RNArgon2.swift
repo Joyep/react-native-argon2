@@ -10,19 +10,29 @@ class RNArgon2: NSObject {
   }
 
   @objc
-  func argon2(_ password: String, salt: String, resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) -> Void {
-    let passwordData: Data? = password.data(using: .utf8)
-    let saltData: Data? = salt.data(using: .utf8)
-
+  func argon2(_ params: NSDictionary, resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) -> Void {
+    
+    let saltData: Data? = Data(base64Encoded: params["salt"] as! String)
+    let passwordData: Data? = Data(base64Encoded: params["password"] as! String)
+    let typeString: String? = params["type"] as? String
+    var type: Argon2.Variant = Argon2.Variant.d
+    if typeString == "d" {
+        type = Argon2.Variant.d
+    } else if typeString == "i" {
+        type = Argon2.Variant.i
+    } else if typeString == "id" {
+        type = Argon2.Variant.id
+    }
+    
     do {
         let (rawHash, encodedHash) = try Argon2.hash(
-            iterations: 2,
-            memoryInKiB: 32 * 1024,
-            threads: 1,
+            iterations: params["iterations"] as! UInt32,
+            memoryInKiB: params["memory"] as! UInt32,
+            threads: params["parallelism"] as! UInt32,
             password: passwordData!,
             salt: saltData!,
-            desiredLength: 32,
-            variant: .id,
+            desiredLength: params["hashLen"] as! Int,
+            variant: type,
             version: .v13
         )
 
